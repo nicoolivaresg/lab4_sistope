@@ -26,12 +26,16 @@ void image_reduction_method1(Image* image) {
 
 	//Recorrer filas desde i = 0 : rows-1
 	while ( i < image->rows ){
-		//Fila con indice par va de izquierda a derecha y fila con indice impar va de derecha a izquierda
-		if( i % 2 == 0){
 			j = 0;
 			//Recorrer pixeles hasta el pixel m
 			while( j < image->cols ){
 				if( count_pixels == 0 ){
+					//Fila con indice par va de izquierda a derecha y fila con indice impar va de derecha a izquierda
+					if( i % 2 == 0){
+
+					}else{
+
+					}
 					//Promedio de RED
 					averageR = sumR/image->mPixels;
 					//Promedio de GREEN
@@ -61,46 +65,15 @@ void image_reduction_method1(Image* image) {
 				sumB = sumB + image->matrix[i][j][2];
 				//Disminución del contador de pixeles;
 				count_pixels--;
-				j++;	
-			}
-
-		}else{
-			j = image->cols;
-			//Recorrer pixeles hasta el pixel m
-			while( j > 0 ){
-				if( count_pixels == 0 ){
-					//Promedio de RED
-					averageR = sumR/image->mPixels;
-					//Promedio de GREEN
-					averageG = sumG/image->mPixels;
-					//Promedio de BLUE
-					averageB = sumB/image->mPixels;
-
-					//Asignación de promedio a reducción
-					newColumn = j - image->mPixels + 1;
-
-					image->reduction[i][newColumn][0] = averageR;
-					image->reduction[i][newColumn][1] = averageG;
-					image->reduction[i][newColumn][2] = averageB;
-					printf("En la posición I(%d,%d) reduce a R(%d,%d) = [%d,%d,%d]\n", i,j,i,newColumn,averageR,averageG,averageB);
-					//Reinicio sumas
-					sumR = 0;
-					sumG = 0;
-					sumB = 0;
-					//Reinicio del contador de pixeles;
-					count_pixels = image->mPixels;
+				//Fila con indice par va de izquierda a derecha y fila con indice impar va de derecha a izquierda
+				if( i % 2 == 0){
+					j++;
+				}else{
+					j--;
 				}
-				//Suma de RED
-				sumR = sumR + image->matrix[i][j][0];
-				//Suma de GREEN
-				sumG = sumG + image->matrix[i][j][1];
-				//Suma de BLUE
-				sumB = sumB + image->matrix[i][j][2];
-				//Disminución del contador de pixeles;
-				count_pixels--;
-				j--;	
 			}
-		}
+
+		
 		
 		i++;
 	}
