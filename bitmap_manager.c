@@ -2,39 +2,36 @@
 
 Pixel** load_bitmap_file(char *filename, BITMAPINFOHEADER *bitmapInfoHeader)
 {
-	int row, col;
-    FILE *filePtr; //our file pointer
-    BITMAPFILEHEADER bitmapFileHeader; //our bitmap file header
-    unsigned char *bitmapImage;  //store image data
-    Pixel** bitmapPixels; // Guardar los pixeles que se retornan
-    int imageIdx=0;  //image index counter
-    unsigned char tempRGB;  //our swap variable
+	int row, col, pixelsRead;
+    FILE *filePtr; // Puntero al archivo.
+    BITMAPFILEHEADER bitmapFileHeader; // Cabecera del archivo bitmap.
+    unsigned char *bitmapImage;  // Informacion inicial de la imagen.
+    Pixel** bitmapPixels; // Guardar los pixeles que se retornan.
+    int imageIdx=0;  // Indice de la imagen.
+    unsigned char tempRGB;  // Variable para hacer un swap.
 
-    //open filename in read binary mode
+    // Se usa el modo binario para lectura y escritura de archivos.
     filePtr = fopen(filename,"rb");
     if (filePtr == NULL)
         return NULL;
 
-    //read the bitmap file header
+    // Leer la cabecera del archivo bitmap.
     fread(&bitmapFileHeader, sizeof(BITMAPFILEHEADER),1,filePtr);
 
-    //verify that this is a bmp file by check bitmap id
+    // Verificar que es un archivo bitmap viendo su tipo.
     if (bitmapFileHeader.bfType !=0x4D42)
     {
         fclose(filePtr);
         return NULL;
     }
 
-    //read the bitmap info header
-    fread(bitmapInfoHeader, sizeof(BITMAPINFOHEADER),1,filePtr); // small edit. forgot to add the closing bracket at sizeof
+    fread(bitmapInfoHeader, sizeof(BITMAPINFOHEADER),1,filePtr);
 
-    //move file point to the begging of bitmap data
+    // Mover el puntero del archivo al principio de los datos de los pixeles.
     fseek(filePtr, bitmapFileHeader.bfOffBits, SEEK_SET);
 
-    //allocate enough memory for the bitmap image data
     bitmapImage = (unsigned char*)malloc(bitmapInfoHeader->biSizeImage);
 
-    //verify memory allocation
     if (!bitmapImage)
     {
         free(bitmapImage);
@@ -42,34 +39,40 @@ Pixel** load_bitmap_file(char *filename, BITMAPINFOHEADER *bitmapInfoHeader)
         return NULL;
     }
 
-    //read in the bitmap image data
+    // Leer los datos de la imagen bmp.
     fread(bitmapImage,bitmapInfoHeader->biSizeImage,filePtr);
 
-    //make sure bitmap image data was read
     if (bitmapImage == NULL)
     {
         fclose(filePtr);
         return NULL;
     }
 
-    //swap the r and b values to get RGB (bitmap is BGR)
-    for (imageIdx = 0;imageIdx < bitmapInfoHeader->biSizeImage;imageIdx+=3) // fixed semicolon
+    // Como se usan 24 bits, se debe rellenar hasta que la cantidad de bytes por fila sean multiplos de 4.
+    int widthPadded = (bitmapInfoHeader->biWidth * 3 + 3) & (~3);
+    // Swappear los valores de R y B para obtener RGB (el bitmap usa BGR).
+    for (pixelsRead = 0, imageIdx = 0;imageIdx < bitmapInfoHeader->biSizeImage;imageIdx+=3)
     {
+    	if(pixelsRead >= bitmapInfoHeader->biWidth) {
+    		pixelsRead = 0;
+    		imageIdx += widthPadded - bitmapInfoHeader->biWidth;
+    	}
         tempRGB = bitmapImage[imageIdx];
         bitmapImage[imageIdx] = bitmapImage[imageIdx + 2];
         bitmapImage[imageIdx + 2] = tempRGB;
     }
 
-
+    // Alocar memoria para almecenar los pixeles en una matriz.
     bitmapPixels = malloc(bitmapInfoHeader->biHeight * sizeof(*bitmapPixels));
     for(row = 0, imageIdx = 0; row < bitmapInfoHeader->biHeight; row++) {
     	bitmapPixels[row] = malloc(bitmapInfoHeader->biWidth * sizeof(*(bitmapPixels[row])));
     	for(col = 0; col < bitmapInfoHeader->biWidth; col++, imageIdx += 3) {
     		pixel_init(&(bitmapPixels[row][col]), bitmapImage[imageIdx], bitmapImage[imageIdx + 1], bitmapImage[imageIdx + 2]);
     	}
+    	imageIdx += widthPadded - bitmapInfoHeader->biWidth;
     }
 
-    //close file and return bitmap image data
+    // Cerrar el archivo y retornar los valores de los pixeles .
     fclose(filePtr);
     return bitmapPixels;
 }
@@ -77,25 +80,52 @@ Pixel** load_bitmap_file(char *filename, BITMAPINFOHEADER *bitmapInfoHeader)
 void save_bitmap_file(char* filename, BITMAPINFOHEADER *bitmapInfoHeader, Pixel** bitmapPixels, int height, int width) {
 	int row, col;
 	FILE* filePtr;
+	int widthPadded = (width * 3 + 3) & (~3);
+	unsigned char* bitmapImage = unload_pixels(bitmapPixels, width, height);
+	int bitmapBytes = widthPadded * height;
+
+	// Abrir archivo y escribir en modo binario, se supone que ya se reviso que se puede abrir.
+    filePtr = fopen(filename,"wb");
+    if (filePtr == NULL)
+        return NULL;
 
 	// Crear headers
+	BITMAPFILEHEADER bitmapFileHeader;
+	bitmapFileHeader.bfType = 0x4D42;
+	bitmapFileHeader.bfSize = 54 + bitmapBytes;
+	bitmapFileHeader.bfReserved1 = 0;
+	bitmapFileHeader.bfReserved2 = 0;
+	bitmapFileHeader.bOffBits = 54;
 
 
 	// Cambiar valores en la cabecera del bitmap
 	bitmapInfoHeader->biWidth = width;
 	bitmapInfoHeader->biHeight = height;
-
-	// Abrir archivo y escribir en modo binario
-    filePtr = fopen(filename,"wb");
-    if (filePtr == NULL)
-        return NULL;
+	bitmapInfoHeader->biSizeImage = bitmapBytes;
 
     fwrite(&bitmapFileHeader, sizeof(BITMAPFILEHEADER),1,filePtr);
     fwrite(bitmapInfoHeader, sizeof(BITMAPINFOHEADER),1,filePtr);
 
-    for(row = 0; row < height; row++) {
-    	fwrite(bitmapPixels[row], sizeof(bitmapPixels[row][0]), width, filePtr);
-    }
+    fwrite(bitmapImage, sizeof(*bitmapImage), bitmapBytes, filePtr);
 
     fclose(filePtr);
+}
+
+unsigned char* image unload_pixels(Pixel** bitmapPixels, int width, int height) {
+	int widthPadded = (width * 3 + 3) & (~3);
+	unsigned char* bitmapImage = malloc(sizeof(*bitmapImage) * (widthPadded * height));
+
+    for(row = 0, imageIdx = 0; row < height; row++) {
+    	
+    	for(col = 0; col < width; col++, imageIdx += 3) {
+    		bitmapImage[imageIdx] = bitmapPixels[row][col].B;
+    		bitmapImage[imageIdx] = bitmapPixels[row][col].G;
+    		bitmapImage[imageIdx] = bitmapPixels[row][col].R;
+    	}
+    	while(imageIdx % 4 != 0) {
+    		bitmapImage[imageIdx++] = 0x00;
+    	}
+    }
+
+    return bitmapImage;
 }
