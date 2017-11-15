@@ -33,10 +33,7 @@ void image_read_initialize(Image* image, char* filename, int m);
  * Funcion que realize la reduccion de la imagen con el metodo de las filas.
  * 
  * Entrada:
- *	image - Puntero a la imange que se le aplica el metodo.
- * 
- * Salida: 
- */
+ *	image - Puntero a la imange que se le aplica el metodo. */
 void image_reduction_method1(Image* image);
 
 /**
