@@ -3,11 +3,24 @@
 void image_read_initialize(Image* image, char* filename, int m) {
 	BITMAPINFOHEADER bitmapInfoHeader;
 	image->bitmapPixels = load_bitmap_file(filename, &bitmapInfoHeader);
-	image->bitmapInfoHeader = &bitmapInfoHeader;
+
+	image->bitmapInfoHeader = malloc(sizeof(*(image->bitmapInfoHeader)));
+	bitmap_header_copy(image->bitmapInfoHeader, &bitmapInfoHeader);
+
 	image->height = bitmapInfoHeader.biHeight;
 	image->width = bitmapInfoHeader.biWidth;
 
 	image->pixelAverage = m;
+}
+
+void image_free(Image* image) {
+	int row;
+    for(row = 0; row < image->bitmapInfoHeader->biHeight; row++) {
+    	free(image->bitmapPixels[row]);
+    }
+    free(image->bitmapPixels);
+
+    free(image->bitmapInfoHeader);
 }
 
 

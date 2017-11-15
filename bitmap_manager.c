@@ -30,9 +30,6 @@ Pixel** load_bitmap_file(char *filename, BITMAPINFOHEADER *bitmapInfoHeader)
     // Mover el puntero del archivo al principio de los datos de los pixeles.
     fseek(filePtr, bitmapFileHeader.bfOffBits, SEEK_SET);
 
-    //printf("sizeof WORD %d\n sizeof DWORD %d\n sizeof LONG %d\n", sizeof(WORD), sizeof(DWORD), sizeof(LONG));
-    //printf("sizeof file header%d\n sizeof info header %d\n", sizeof(BITMAPFILEHEADER), sizeof(BITMAPINFOHEADER));
-
     bitmapImage = (unsigned char*)malloc(bitmapInfoHeader->biSizeImage);
 
     if (bitmapImage == NULL)
@@ -78,16 +75,10 @@ Pixel** load_bitmap_file(char *filename, BITMAPINFOHEADER *bitmapInfoHeader)
 
     }
 
-    /*for(row = 0; row < bitmapInfoHeader->biHeight; row++) {
-    	
-    	for(col = 0; col < bitmapInfoHeader->biWidth; col++) {
-    		printf("(%d %d %d), ", bitmapPixels[row][col].R, bitmapPixels[row][col].G, bitmapPixels[row][col].B);
-    	}
-    	printf("\n");
-    }*/
-
-    // Cerrar el archivo y retornar los valores de los pixeles .
+    // Cerrar el archivo y retornar los valores de los pixeles.
     fclose(filePtr);
+	free(bitmapImage);
+
     return bitmapPixels;
 }
 
@@ -96,7 +87,7 @@ void save_bitmap_file(char* filename, BITMAPINFOHEADER *bitmapInfoHeader, Pixel*
 	FILE* filePtr;
 	int widthPadded = (width * 3 + 3) & (~3);
 	unsigned char* bitmapImage = unload_pixels(bitmapPixels, width, height);
-	int bitmapBytes = widthPadded * height;
+	DWORD bitmapBytes = widthPadded * height;
 
 	// Abrir archivo y escribir en modo binario, se supone que ya se reviso que se puede abrir.
     filePtr = fopen(filename,"wb");
@@ -120,9 +111,10 @@ void save_bitmap_file(char* filename, BITMAPINFOHEADER *bitmapInfoHeader, Pixel*
     fwrite(&bitmapFileHeader, sizeof(BITMAPFILEHEADER),1,filePtr);
     fwrite(bitmapInfoHeader, sizeof(BITMAPINFOHEADER),1,filePtr);
 
-    fwrite(bitmapImage, 1, bitmapBytes, filePtr);
+    fwrite(bitmapImage, bitmapInfoHeader->biSizeImage, 1, filePtr);
 
     fclose(filePtr);
+    free(bitmapImage);
 }
 
 unsigned char* unload_pixels(Pixel** bitmapPixels, int width, int height) {
@@ -143,4 +135,18 @@ unsigned char* unload_pixels(Pixel** bitmapPixels, int width, int height) {
     }
 
     return bitmapImage;
+}
+
+void bitmap_header_copy(BITMAPINFOHEADER* dest, BITMAPINFOHEADER* src) {
+	dest->biSize = src->biSize;
+	dest->biWidth = src->biWidth;
+	dest->biHeight = src->biHeight;
+	dest->biPlanes = src->biPlanes;
+	dest->biBitCount = src->biBitCount;
+	dest->biCompression = src->biCompression;
+	dest->biSizeImage = src->biSizeImage;
+	dest->biXPelsPerMeter = src->biXPelsPerMeter;
+	dest->biYPelsPerMeter = src->biYPelsPerMeter;
+	dest->biClrUsed = src->biClrUsed;
+	dest->biClrImportant = src->biClrImportant;
 }

@@ -32,6 +32,14 @@ typedef struct image {
 void image_read_initialize(Image* image, char* filename, int m);
 
 /**
+ * Libera la memoria utilizada por una Image.
+ * 
+ * Entrada:
+ *	image 	- Puntero a una estructura del tipo Image.
+ */
+void image_free(Image* image);
+
+/**
  * Funcion que realize la reduccion de la imagen con el metodo de las filas.
  * 
  * Entrada:

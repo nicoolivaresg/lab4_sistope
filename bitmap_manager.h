@@ -84,5 +84,13 @@ void save_bitmap_file(char* filename, BITMAPINFOHEADER* bitmapInfoHeader, Pixel*
  */
 unsigned char* unload_pixels(Pixel** bitmapPixels, int width, int height);
 
+/**
+ * Metodo que copia los datos de un BITMAPINFOHEADER en otro BITMAPINFOHEADER.
+ * 
+ * Entrada:
+ *	dest	- BITMAPINFOHEADER donde se guarda una copia del otro BITMAPINFOHEADER.
+ *	src 	- BITMAPINFOHEADER de donde se copian los datos.
+ */
+void bitmap_header_copy(BITMAPINFOHEADER* dest, BITMAPINFOHEADER* src);
 
 #endif

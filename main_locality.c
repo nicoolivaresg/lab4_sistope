@@ -134,6 +134,9 @@ int main(int  argc, char ** argv){
 		printf("Con un tiempo promedio de ejecucion de %f\n", duration / (double)iterations);
 	}
 
+	image_free(&image);
+	free(input_file);
+	free(output_file);
 	return 0;
 }
 
