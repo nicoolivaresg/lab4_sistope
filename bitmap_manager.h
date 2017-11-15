@@ -6,6 +6,11 @@
 #define _BITMAP_MANAGER_H
 
 #include "util.h"
+#include "pixel.h"
+
+typedef unsigned int DWORD;
+typedef unsigned short WORD;
+typedef int LONG;
 
 #pragma pack(push, 1)
 
@@ -15,7 +20,7 @@ typedef struct tagBITMAPFILEHEADER
     DWORD bfSize;	/* Especifica el tamaño en bytes del archivo bitmap. */
     WORD bfReserved1;/* Reservado; en estos casos debe ser 0. */
     WORD bfReserved2;/* Reservado; en estos casos debe ser 0. */
-    DWORD bOffBits;  /* Indica el offset en bytres desde este header hasta los bits del bitmap. */
+    DWORD bfOffBits;  /* Indica el offset en bytres desde este header hasta los bits del bitmap. */
 }BITMAPFILEHEADER;
 
 
@@ -77,7 +82,7 @@ void save_bitmap_file(char* filename, BITMAPINFOHEADER* bitmapInfoHeader, Pixel*
  * Salida: Arreglo de unsigned char que poseen la informacion de la matriz de pixeles en
  * un formato que usa para almacenarlo en un archivo en formato bmp.
  */
-unsigned char* image unload_pixels(Pixel** bitmapPixels, int width, int height);
+unsigned char* unload_pixels(Pixel** bitmapPixels, int width, int height);
 
 
 #endif

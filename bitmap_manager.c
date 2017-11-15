@@ -17,7 +17,7 @@ Pixel** load_bitmap_file(char *filename, BITMAPINFOHEADER *bitmapInfoHeader)
 
     // Leer la cabecera del archivo bitmap.
     fread(&bitmapFileHeader, sizeof(BITMAPFILEHEADER),1,filePtr);
-
+    
     // Verificar que es un archivo bitmap viendo su tipo.
     if (bitmapFileHeader.bfType !=0x4D42)
     {
@@ -30,20 +30,25 @@ Pixel** load_bitmap_file(char *filename, BITMAPINFOHEADER *bitmapInfoHeader)
     // Mover el puntero del archivo al principio de los datos de los pixeles.
     fseek(filePtr, bitmapFileHeader.bfOffBits, SEEK_SET);
 
+    //printf("sizeof WORD %d\n sizeof DWORD %d\n sizeof LONG %d\n", sizeof(WORD), sizeof(DWORD), sizeof(LONG));
+    //printf("sizeof file header%d\n sizeof info header %d\n", sizeof(BITMAPFILEHEADER), sizeof(BITMAPINFOHEADER));
+
     bitmapImage = (unsigned char*)malloc(bitmapInfoHeader->biSizeImage);
 
-    if (!bitmapImage)
+    if (bitmapImage == NULL)
     {
+    	printf("Could not assign bitmap image data memory.\n");
         free(bitmapImage);
         fclose(filePtr);
         return NULL;
     }
 
     // Leer los datos de la imagen bmp.
-    fread(bitmapImage,bitmapInfoHeader->biSizeImage,filePtr);
+    fread(bitmapImage,bitmapInfoHeader->biSizeImage, 1, filePtr);
 
     if (bitmapImage == NULL)
     {
+    	printf("Could not read bitmap image data.\n");
         fclose(filePtr);
         return NULL;
     }
@@ -69,8 +74,17 @@ Pixel** load_bitmap_file(char *filename, BITMAPINFOHEADER *bitmapInfoHeader)
     	for(col = 0; col < bitmapInfoHeader->biWidth; col++, imageIdx += 3) {
     		pixel_init(&(bitmapPixels[row][col]), bitmapImage[imageIdx], bitmapImage[imageIdx + 1], bitmapImage[imageIdx + 2]);
     	}
-    	imageIdx += widthPadded - bitmapInfoHeader->biWidth;
+    	imageIdx += widthPadded - bitmapInfoHeader->biWidth * 3;
+
     }
+
+    /*for(row = 0; row < bitmapInfoHeader->biHeight; row++) {
+    	
+    	for(col = 0; col < bitmapInfoHeader->biWidth; col++) {
+    		printf("(%d %d %d), ", bitmapPixels[row][col].R, bitmapPixels[row][col].G, bitmapPixels[row][col].B);
+    	}
+    	printf("\n");
+    }*/
 
     // Cerrar el archivo y retornar los valores de los pixeles .
     fclose(filePtr);
@@ -87,7 +101,7 @@ void save_bitmap_file(char* filename, BITMAPINFOHEADER *bitmapInfoHeader, Pixel*
 	// Abrir archivo y escribir en modo binario, se supone que ya se reviso que se puede abrir.
     filePtr = fopen(filename,"wb");
     if (filePtr == NULL)
-        return NULL;
+        return;
 
 	// Crear headers
 	BITMAPFILEHEADER bitmapFileHeader;
@@ -95,7 +109,7 @@ void save_bitmap_file(char* filename, BITMAPINFOHEADER *bitmapInfoHeader, Pixel*
 	bitmapFileHeader.bfSize = 54 + bitmapBytes;
 	bitmapFileHeader.bfReserved1 = 0;
 	bitmapFileHeader.bfReserved2 = 0;
-	bitmapFileHeader.bOffBits = 54;
+	bitmapFileHeader.bfOffBits = 54;
 
 
 	// Cambiar valores en la cabecera del bitmap
@@ -106,12 +120,13 @@ void save_bitmap_file(char* filename, BITMAPINFOHEADER *bitmapInfoHeader, Pixel*
     fwrite(&bitmapFileHeader, sizeof(BITMAPFILEHEADER),1,filePtr);
     fwrite(bitmapInfoHeader, sizeof(BITMAPINFOHEADER),1,filePtr);
 
-    fwrite(bitmapImage, sizeof(*bitmapImage), bitmapBytes, filePtr);
+    fwrite(bitmapImage, 1, bitmapBytes, filePtr);
 
     fclose(filePtr);
 }
 
-unsigned char* image unload_pixels(Pixel** bitmapPixels, int width, int height) {
+unsigned char* unload_pixels(Pixel** bitmapPixels, int width, int height) {
+	int row, col, imageIdx;
 	int widthPadded = (width * 3 + 3) & (~3);
 	unsigned char* bitmapImage = malloc(sizeof(*bitmapImage) * (widthPadded * height));
 
@@ -119,8 +134,8 @@ unsigned char* image unload_pixels(Pixel** bitmapPixels, int width, int height) 
     	
     	for(col = 0; col < width; col++, imageIdx += 3) {
     		bitmapImage[imageIdx] = bitmapPixels[row][col].B;
-    		bitmapImage[imageIdx] = bitmapPixels[row][col].G;
-    		bitmapImage[imageIdx] = bitmapPixels[row][col].R;
+    		bitmapImage[imageIdx+1] = bitmapPixels[row][col].G;
+    		bitmapImage[imageIdx+2] = bitmapPixels[row][col].R;
     	}
     	while(imageIdx % 4 != 0) {
     		bitmapImage[imageIdx++] = 0x00;

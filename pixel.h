@@ -12,7 +12,7 @@
  */
 typedef struct pixel {
 	unsigned char R, G, B;
-} PIXEL;
+} Pixel;
 
 /**
  * Inicializa un pixel con los datos entregados en los parametros.

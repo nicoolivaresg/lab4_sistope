@@ -106,7 +106,7 @@ int main(int  argc, char ** argv){
 	}
 
 	for (i = 0; i < iterations; ++i) {
-		image_reduction_method1(&image);
+		//image_reduction_method1(&image);
 		image_write(&image, output_file);
 	}
 
@@ -123,8 +123,8 @@ int main(int  argc, char ** argv){
 		start = clock();
 	}
 	for (i = 0; i < iterations; ++i) {
-		image_reduction_method2(&image);
-		image_write(&image, output_file);
+		//image_reduction_method2(&image);
+		//image_write(&image, output_file);
 	}
 
 	if(dflag) {

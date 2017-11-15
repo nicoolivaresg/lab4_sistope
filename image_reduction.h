@@ -10,10 +10,12 @@
 #include <unistd.h>
 
 typedef struct image {
-	int ** matrix;		/* Matriz donde se guardan los datos de la imagen. */
-	int ** reduction;	/* Matriz en donde se guardan los datos de la imagen reducida. */
-	int rows, cols;			/* Tamaños de la matriz. */
-	int mPixels;		/* Cantidad de pixeles que se agrupan y promedian. */
+	Pixel** bitmapPixels;	/* Matriz donde se guardan los datos de la imagen. */
+	Pixel** reducedBitmapPixels; /* Matriz en donde se guardan los datos de la imagen reducida. */
+	BITMAPINFOHEADER* bitmapInfoHeader; /* Informacion de la cabecera de la imagen */
+	int reducedHeight, reducedWidth; /* Tamaños de la imagen reducida. */
+	int width, height;			/* Tamaños de la matriz. */
+	int pixelAverage;		/* Cantidad de pixeles que se agrupan y promedian. */
 
 } Image;
 
