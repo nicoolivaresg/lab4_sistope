@@ -112,7 +112,7 @@ int main(int  argc, char ** argv){
 
 	if(dflag) {
 		end = clock();
-		duration = (double)(end - start) / CLOCKS_PER_SEC;
+		duration = ((double)(end - start)) / CLOCKS_PER_SEC;
 		printf("La duracion de ejecutar el metodo 1 %d veces fue de %f\n", iterations, duration);
 		printf("Con un tiempo promedio de ejecucion de %f\n\n", duration / (double)iterations);
 	}
@@ -129,7 +129,7 @@ int main(int  argc, char ** argv){
 
 	if(dflag) {
 		end = clock();
-		duration = (double)(end - start) / CLOCKS_PER_SEC;
+		duration = ((double)(end - start)) / CLOCKS_PER_SEC;
 		printf("La duracion de ejecutar el metodo 2 %d veces fue de %f\n", iterations, duration);
 		printf("Con un tiempo promedio de ejecucion de %f\n", duration / (double)iterations);
 	}
