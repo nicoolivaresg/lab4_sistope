@@ -2,10 +2,11 @@
 	HEADERS DE FUNCIONES PARA MANEJADOR DE IMAGENES
 */
 
-#ifndef _THREAD_HANDLER_H
-#define _THREAD_HANDLER_H
+#ifndef _IMAGE_REDUCTION_H
+#define _IMAGE_REDUCTION_H
 
 #include "util.h"
+#include "bitmap_manager.h"
 #include <unistd.h>
 
 typedef struct image {
