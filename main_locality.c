@@ -5,17 +5,21 @@
 int main(int  argc, char ** argv){
 	int i, j;
 	int iflag = 0;//Flag nombre de archivo de entrada
-	int sflag = 0;//Flag nombre de archivo de salida
+	int sflag = 0;//Flag nombre de archivo de salida metodo 1
+	int gflag = 0;//Flag nombre de archivo de salida metodo 2
 	int nflag = 0;//Flag cantidad de veces a implementar la reduccion
 	int mflag = 0;//Flag cantidad de pixeles a promediar
+	int oflag = 0;//Flag del metodo a implementar
 	int dflag = 0;//Flag mostrar resultados por pantalla
 	char * input_file = NULL;
-	char * output_file = NULL;
+	char * output_method1_file = NULL;
+	char * output_method2_file = NULL;
 	int iterations = 0;
 	int pixels_to_average = 0;
+	int methods_to_execute = 0;
 	int c;
 	opterr=0;
-	while((c = getopt(argc,argv,"i:s:n:m:d")) != -1){
+	while((c = getopt(argc,argv,"i:s:g:n:m:o:d")) != -1){
 		switch(c){
 			case 'i':
 				iflag = 1;
@@ -24,16 +28,25 @@ int main(int  argc, char ** argv){
 				break;
 			case 's':
 				sflag = 1;
-				output_file = malloc(strlen(optarg)+1);
-				strcpy(output_file,optarg);
+				output_method1_file = malloc(strlen(optarg)+1);
+				strcpy(output_method1_file,optarg);
 				break;
-			case 'n':
+			case 'g':
+				gflag = 1;
+				output_method2_file = malloc(strlen(optarg)+1);
+				strcpy(output_method2_file,optarg);
+				break;
+			case 'n':	
 				nflag = 1;
 				sscanf(optarg, "%d", &iterations);
 				break;
 			case 'm':
 				mflag = 1;
 				sscanf(optarg, "%d", &pixels_to_average);
+				break;
+			case 'o':	
+				oflag = 1;
+				sscanf(optarg, "%d", &methods_to_execute);
 				break;
 			case 'd':
 				dflag = 1;
@@ -43,9 +56,13 @@ int main(int  argc, char ** argv){
 					fprintf(stderr, "Opcion -%c requiere un argumento.\n", optopt);
 				}else if(optopt == 's'){
 					fprintf(stderr, "Opcion -%c requiere un argumento.\n", optopt);
+				}else if(optopt == 'g'){
+					fprintf(stderr, "Opcion -%c requiere un argumento.\n", optopt);
 				}else if(optopt == 'n'){
 					fprintf(stderr, "Opcion -%c requiere un argumento.\n", optopt);
 				}else if(optopt == 'm'){
+					fprintf(stderr, "Opcion -%c requiere un argumento.\n", optopt);
+				}else if(optopt == 'o'){
 					fprintf(stderr, "Opcion -%c requiere un argumento.\n", optopt);
 				}else if(isprint(optopt)){
 					fprintf(stderr, "Opcion desconocida '-%c'.\n", optopt);
@@ -84,13 +101,19 @@ int main(int  argc, char ** argv){
 		printf("El archivo %s no existe, ejecute el programa con un archivo existente.\n", input_file);
 		return 1;
 	}
-	FILE* file_out = fopen(output_file, "w");
-	if(file_out == NULL) {
-		printf("No se puede crear el archivo %s, revise que tenga los privilegios necesaros.\n", input_file);
+	FILE* file_out_1 = fopen(output_method1_file, "w");
+	if(file_out_1 == NULL) {
+		printf("No se puede crear el archivo %s, revise que tenga los privilegios necesaros.\n", output_method1_file);
+		return 1;
+	}
+	FILE* file_out_2 = fopen(output_method2_file, "w");
+	if(file_out_2 == NULL) {
+		printf("No se puede crear el archivo %s, revise que tenga los privilegios necesaros.\n", output_method2_file);
 		return 1;
 	}
 	fclose(file_in);
-	fclose(file_out);
+	fclose(file_out_1);
+	fclose(file_out_2);
 
 	// Initialize and create image variable
 	Image image;
@@ -100,43 +123,106 @@ int main(int  argc, char ** argv){
 	clock_t start, end;
 	double duration;
 
-	// Metodo 1
-	if(dflag) {
-		start = clock();
+	switch(methods_to_execute){
+		case 1:
+			// Solo Metodo 1
+			if(dflag) {
+				start = clock();
+			}
+
+			for (i = 0; i < iterations; ++i) {
+				image_reduction_method1(&image);
+				if(dflag) {
+					end = clock();
+					duration = ((double)(end - start)) / CLOCKS_PER_SEC;
+					printf("La duraci%cn de ejecutar el m%ctodo 1 en la iteraci%cn %d veces fue de %f\n",162,130,162, i, duration);
+				}
+				image_write(&image, output_method1_file);
+			}
+
+			if(dflag) {
+				end = clock();
+				duration = ((double)(end - start)) / CLOCKS_PER_SEC;
+				printf("La duraci%cn de ejecutar el m%ctodo 1 %d veces fue de %f\n",162,130, iterations, duration);
+				printf("Con un tiempo promedio de ejecucion de %f\n\n", duration / (double)iterations);
+			}
+			image_free(&image);
+			break;
+		case 2:
+			//Solo Metodo 2
+			if(dflag) {
+				start = clock();
+			}
+			for (i = 0; i < iterations; ++i) {
+				//image_reduction_method2(&image);
+				if(dflag) {
+					end = clock();
+					duration = ((double)(end - start)) / CLOCKS_PER_SEC;
+					printf("La duraci%cn de ejecutar el m%ctodo 2 en la iteraci%cn %d veces fue de %f\n",162,130,162, i, duration);
+				}
+				//image_write(&image, output_file);
+			}
+
+			if(dflag) {
+				end = clock();
+				duration = ((double)(end - start)) / CLOCKS_PER_SEC;
+				printf("La duraci%cn de ejecutar el m%ctodo 2 %d veces fue de %f\n",162,130, iterations, duration);
+				printf("Con un tiempo promedio de ejecucion de %f\n", duration / (double)iterations);
+			}
+			image_free(&image);
+			break;
+		case 3:
+			// Metodo 1
+			if(dflag) {
+				start = clock();
+			}
+
+			for (i = 0; i < iterations; ++i) {
+				image_reduction_method1(&image);
+				if(dflag) {
+					end = clock();
+					duration = ((double)(end - start)) / CLOCKS_PER_SEC;
+					printf("La duraci%cn de ejecutar el m%ctodo 1 en la iteraci%cn %d veces fue de %f\n",162,130,162, i, duration);
+				}
+				image_write(&image, output_method1_file);
+			}
+
+			if(dflag) {
+				end = clock();
+				duration = ((double)(end - start)) / CLOCKS_PER_SEC;
+				printf("La duraci%cn de ejecutar el m%ctodo 1 %d veces fue de %f\n",162,130, iterations, duration);
+				printf("Con un tiempo promedio de ejecucion de %f\n\n", duration / (double)iterations);
+			}
+			image_free(&image);
+
+			//Metodo 2
+			if(dflag) {
+				start = clock();
+			}
+			for (i = 0; i < iterations; ++i) {
+				//image_reduction_method2(&image);
+				if(dflag) {
+					end = clock();
+					duration = ((double)(end - start)) / CLOCKS_PER_SEC;
+					printf("La duraci%cn de ejecutar el m%ctodo 2 en la iteraci%cn %d veces fue de %f\n",162,130,162, i, duration);
+				}
+				//image_write(&image, output_file);
+			}
+
+			if(dflag) {
+				end = clock();
+				duration = ((double)(end - start)) / CLOCKS_PER_SEC;
+				printf("La duraci%cn de ejecutar el m%ctodo 2 %d veces fue de %f\n",162,130, iterations, duration);
+				printf("Con un tiempo promedio de ejecucion de %f\n", duration / (double)iterations);
+			}
+			image_free(&image);
+			break;
+		default:
+			image_free(&image);
+			printf("Debe seleccionar 3 opciones:\n\t1) Ejecutar solo método 1\n\t2) Ejecutar solo método 2\n\t3) Ejecutar ambos métodos\n");
+			return 1;
 	}
 
-	for (i = 0; i < iterations; ++i) {
-		//image_reduction_method1(&image);
-		image_write(&image, output_file);
-	}
-
-	if(dflag) {
-		end = clock();
-		duration = ((double)(end - start)) / CLOCKS_PER_SEC;
-		printf("La duracion de ejecutar el metodo 1 %d veces fue de %f\n", iterations, duration);
-		printf("Con un tiempo promedio de ejecucion de %f\n\n", duration / (double)iterations);
-	}
-
-
-	// Metodo 2
-	if(dflag) {
-		start = clock();
-	}
-	for (i = 0; i < iterations; ++i) {
-		//image_reduction_method2(&image);
-		//image_write(&image, output_file);
-	}
-
-	if(dflag) {
-		end = clock();
-		duration = ((double)(end - start)) / CLOCKS_PER_SEC;
-		printf("La duracion de ejecutar el metodo 2 %d veces fue de %f\n", iterations, duration);
-		printf("Con un tiempo promedio de ejecucion de %f\n", duration / (double)iterations);
-	}
-
-	image_free(&image);
-	free(input_file);
-	free(output_file);
 	return 0;
 }
 
