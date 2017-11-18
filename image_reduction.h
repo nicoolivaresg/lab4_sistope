@@ -40,6 +40,14 @@ void image_read_initialize(Image* image, char* filename, int m);
 void image_free(Image* image);
 
 /**
+ * Funcion que inicializa la matriz de reducción con de la Imagen.
+ * 
+ * Entrada:
+ *	image 	- Puntero a una estructura del tipo Image, es inicializada en esta funcion.
+ */
+void image_reduction_init(Image * image);
+
+/**
  * Funcion que realize la reduccion de la imagen con el metodo de las filas.
  * 
  * Entrada:
