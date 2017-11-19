@@ -44,8 +44,9 @@ void image_free(Image* image);
  * 
  * Entrada:
  *	image 	- Puntero a una estructura del tipo Image, es inicializada en esta funcion.
+ *	method 	- Refiere al metodo para reducir el tamaño de la imagen
  */
-void image_reduction_init(Image * image);
+void image_reduction_init(Image * image, int method);
 
 /**
  * Funcion que realize la reduccion de la imagen con el metodo de las filas.
@@ -63,7 +64,7 @@ void image_reduction_method1(Image* image);
 void image_reduction_method2(Image* image);
 
 /**
- * Escribe los resultados obtenidos al reducir la imagen en un archivo.
+ * Escribe la imagen original en un archivo.
  * 
  * Entrada:
  *	image 	 - Puntero a la imagen que se quiere guardar.
@@ -71,5 +72,13 @@ void image_reduction_method2(Image* image);
  */
 void image_write(Image * image, char* filename);
 
+/**
+ * Escribe los resultados obtenidos al reducir la imagen en un archivo.
+ * 
+ * Entrada:
+ *	image 	 - Puntero a la imagen que se quiere guardar.
+ *	filename - Nombre del archivo en donde se guarda la imagen.
+ */
+void image_write_reduction(Image * image, char * filename);
 
 #endif

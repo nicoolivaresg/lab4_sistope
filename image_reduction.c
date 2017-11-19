@@ -18,12 +18,32 @@ void image_free(Image* image) {
     for(row = 0; row < image->bitmapInfoHeader->biHeight; row++) {
     	free(image->bitmapPixels[row]);
     }
+
+    for(row = 0; row < image->bitmapInfoHeader->biHeight; row++) {
+    	free(image->bitmapPixels[row]);
+    }
+    
     free(image->bitmapPixels);
+
+    free(image->reducedBitmapPixels);
 
     free(image->bitmapInfoHeader);
 }
 
-void image_reduction_init(Image * image) {
+void image_reduction_init(Image * image, int method) {
+
+	// Ancho y altura de imagen al reducir	
+	if (method ==1){
+		//Valor de la nueva cantidad de columnas en la reducción
+		int reductionCols = image->width / image->pixelAverage;
+		image->reducedWidth = reductionCols;
+		image->reducedHeight = image->height;
+	}else{
+		//Valor de la nueva cantidad de columnas en la reducción
+		int reductionRows = image->height / image->pixelAverage;
+		image->reducedWidth = image->width;
+		image->reducedHeight = reductionRows; 
+	}
 	
 	image->reducedBitmapPixels = (Pixel **)malloc(image->reducedHeight *sizeof(Pixel *));
 	
@@ -38,103 +58,232 @@ void image_reduction_init(Image * image) {
 	}
 }
 
-
-
 void image_reduction_method1(Image* image) {
-	int i = 0, j, indexNewColumn = 0;
+	int i, k, j, indexNewColumn = 0;
 	//Contador para determinar cuando toque sacar el promedio porque se alcanzan los m pixeles
 	int count_pixels = image->pixelAverage;
 	//Contador para sumar el valor de los pixeles
 	int sumR = 0,sumG = 0,sumB = 0;
 	int averageR = 0,averageG = 0,averageB = 0;
 
-	//Valor de la nueva cantidad de columnas en la reducción
-	int reductionCols = image->width / image->pixelAverage + 1;
-	image->reducedWidth = reductionCols;
 	//Valor del exceso o resto de pixeles que son igual o menor que el valor de m
-	int remaining_pixels = image->height % image->pixelAverage;
-	
-	image->reducedHeight = image->width;
-	
+	int remaining_pixels = image->width % image->pixelAverage;
 
-	image_reduction_init(image);
+	//Inicialización de matriz de 
+	image_reduction_init(image,1);
 
-	int salir = 0;
-	//Recorrer filas desde i = 0 : height-1
-	//while ( i < image->height){
-			j = 0;
-			//Recorrer pixeles hasta el pixel m
-			while( j < image->width && salir != 1){
-				if( count_pixels == 0 ){
-					
-					//Promedio de RED
+	i = 0;
+	j = 0;
+	k = 0;
+	do
+	{	
+		if( i % 2 == 0){
+			//Si recorro de izq a der
+			while( j < image-> width ){
+				if( j == image->width - 1 - remaining_pixels && remaining_pixels != 0){
+					//Si llego al primer pixel restante, porque faltan pixeles hasta el borde
+					//Reinicio de sumas
+					sumR = 0;
+					sumG = 0;
+					sumB = 0;
+					k = 0;
+					for (k = j; k < image->width; k++)
+					{
+						//Suma de RED
+						sumR = sumR + image->bitmapPixels[i][k].R;
+						//Suma de GREEN
+						sumG = sumG + image->bitmapPixels[i][k].G;
+						//Suma de BLUE
+						sumB = sumB + image->bitmapPixels[i][k].B;	
+					}
+
+					averageR = sumR/remaining_pixels;
+					averageG = sumG/remaining_pixels;
+					averageB = sumB/remaining_pixels;
+					for(k = 0; k <  ( image->pixelAverage - remaining_pixels ); k++ ){
+						sumR = sumR + averageR;
+						sumG = sumG + averageG;
+						sumB = sumB + averageB;
+					}
+
 					averageR = sumR/image->pixelAverage;
-					//Promedio de GREEN
 					averageG = sumG/image->pixelAverage;
-					//Promedio de BLUE
 					averageB = sumB/image->pixelAverage;
-				
 
 					image->reducedBitmapPixels[i][indexNewColumn].R = averageR;
 					image->reducedBitmapPixels[i][indexNewColumn].G = averageG;
 					image->reducedBitmapPixels[i][indexNewColumn].B = averageB;
-					printf("En la posición I(%d,%d) reduce a R(%d,%d) = [%d,%d,%d]\n", i,j,i,indexNewColumn,image->reducedBitmapPixels[i][indexNewColumn].R,image->reducedBitmapPixels[i][indexNewColumn].G,image->reducedBitmapPixels[i][indexNewColumn].B);
+
+					//Salgo del ciclo
+					j = image->width;
+
 					//Reinicio sumas
 					sumR = 0;
 					sumG = 0;
 					sumB = 0;
 					//Reinicio del contador de pixeles;
 					count_pixels = image->pixelAverage;
-
-					//Fila con indice par va de izquierda a derecha y fila con indice impar va de derecha a izquierda
-					if( i % 2 == 0){
-						indexNewColumn++;
-					}else{
-						indexNewColumn--;
-					}
-				}
-				//Suma de RED
-				sumR = sumR + image->bitmapPixels[i][j].R;
-				//Suma de GREEN
-				sumG = sumG + image->bitmapPixels[i][j].G;
-				//Suma de BLUE
-				sumB = sumB + image->bitmapPixels[i][j].B;
-				//Disminución del contador de pixeles;
-				count_pixels--;
-				//Fila con indice par va de izquierda a derecha y fila con indice impar va de derecha a izquierda
-				if( i % 2 == 0){
-					j++;
+	
 				}else{
-					j--;
-				}
-				//printf("Datos iteración");
-				//getchar();
-				
+					//Para todos los demás pixeles, serían los agrupables y reducibles por m pixels
+					//Suma de RED
+					sumR = sumR + image->bitmapPixels[i][j].R;
+					//Suma de GREEN
+					sumG = sumG + image->bitmapPixels[i][j].G;
+					//Suma de BLUE
+					sumB = sumB + image->bitmapPixels[i][j].B;	
+					
+					//Disminución del contador de pixeles;
+					count_pixels--;
 
-				if( (i % 2 == 0) && (j == image->width - remaining_pixels ) ){
-					i++;
-					printf("i:%d j:%d NC:%d\n", i,j,indexNewColumn);
-					if(i == image->height){
-						printf("%d\n", salir);
-						salir = 1;
-					}
-				}else if ( (i % 2 != 0) && (j == 0) ){
-					i++;
-					if(i == image->height){
-						printf("%d\n", salir);
-						salir = 1;
+					if( count_pixels == 0 ){
+						
+						//Promedio de RED
+						averageR = sumR/image->pixelAverage;
+						//Promedio de GREEN
+						averageG = sumG/image->pixelAverage;
+						//Promedio de BLUE
+						averageB = sumB/image->pixelAverage;
+						
+						averageR = sumR + (remaining_pixels * averageR);
+						
+						averageG = sumG + (remaining_pixels * averageG);
+						
+						averageB = sumB + (remaining_pixels * averageB);
+					
+						
+						image->reducedBitmapPixels[i][indexNewColumn].R = averageR;
+						image->reducedBitmapPixels[i][indexNewColumn].G = averageG;
+						image->reducedBitmapPixels[i][indexNewColumn].B = averageB;
+						
+						//Reinicio sumas
+						sumR = 0;
+						sumG = 0;
+						sumB = 0;
+						//Reinicio del contador de pixeles;
+						count_pixels = image->pixelAverage;
+
+						indexNewColumn++;
+						
 					}
 				}
+				j++;
 			}
-	//	i++;
-	//}
+
+			j = image->width - 1;
+
+		}else{
+			//Si recorro de der a izq
+			while( j >= 0){
+
+				if( j == remaining_pixels && remaining_pixels != 0){
+					//Si llego al primer pixel restante, porque faltan pixeles hasta el borde
+					
+					//Reinicio de sumas
+					sumR = 0;
+					sumG = 0;
+					sumB = 0;
+
+					k = 0;
+					for (k = j; k >= 0; k--)
+					{
+						//Suma de RED
+						sumR = sumR + image->bitmapPixels[i][k].R;
+						//Suma de GREEN
+						sumG = sumG + image->bitmapPixels[i][k].G;
+						//Suma de BLUE
+						sumB = sumB + image->bitmapPixels[i][k].B;	
+					}
+
+					averageR = sumR/remaining_pixels;
+					averageG = sumG/remaining_pixels;
+					averageB = sumB/remaining_pixels;
+
+					for(k = 0; k <  ( image->pixelAverage - remaining_pixels ); k++ ){
+						sumR = sumR + averageR;
+						sumG = sumG + averageG;
+						sumB = sumB + averageB;
+					}
+
+					averageR = sumR/image->pixelAverage;
+					averageG = sumG/image->pixelAverage;
+					averageB = sumB/image->pixelAverage;
+
+					image->reducedBitmapPixels[i][indexNewColumn].R = averageR;
+					image->reducedBitmapPixels[i][indexNewColumn].G = averageG;
+					image->reducedBitmapPixels[i][indexNewColumn].B = averageB;
+					
+					//Salgo del ciclo
+					j = -1;
+
+					//Reinicio sumas
+					sumR = 0;
+					sumG = 0;
+					sumB = 0;
+
+					//Reinicio del contador de pixeles;
+					count_pixels = image->pixelAverage;
+	
+				}else{
+					//Para todos los demás pixeles, serían los agrupables y reducibles por m pixels
+					
+					//Suma de RED
+					sumR = sumR + image->bitmapPixels[i][j].R;
+					//Suma de GREEN
+					sumG = sumG + image->bitmapPixels[i][j].G;
+					//Suma de BLUE
+					sumB = sumB + image->bitmapPixels[i][j].B;	
+					
+					//Disminución del contador de pixeles;
+					count_pixels--;
+
+					if( count_pixels == 0 ){
+						
+						//Promedio de RED
+						averageR = sumR/image->pixelAverage;
+						//Promedio de GREEN
+						averageG = sumG/image->pixelAverage;
+						//Promedio de BLUE
+						averageB = sumB/image->pixelAverage;
+						
+						averageR = sumR + (remaining_pixels * averageR);
+						
+						averageG = sumG + (remaining_pixels * averageG);
+						
+						averageB = sumB + (remaining_pixels * averageB);
+					
+						
+						image->reducedBitmapPixels[i][indexNewColumn].R = averageR;
+						image->reducedBitmapPixels[i][indexNewColumn].G = averageG;
+						image->reducedBitmapPixels[i][indexNewColumn].B = averageB;
+						
+						//Reinicio sumas
+						sumR = 0;
+						sumG = 0;
+						sumB = 0;
+						//Reinicio del contador de pixeles;
+						count_pixels = image->pixelAverage;
+
+						indexNewColumn--;
+						
+					}
+				}
+				j--;
+			}
+			j = 0;
+		}
+		i++;
+	} while ( i < image->width );
 }
 
 void image_reduction_method2(Image* image) {
 	
 }
 
-
 void image_write(Image * image, char* filename) {
 	save_bitmap_file(filename, image->bitmapInfoHeader, image->bitmapPixels, image->height, image->width);
+}
+
+void image_write_reduction(Image * image, char * filename){
+	save_bitmap_file(strcat(filename,".bmp"), image->bitmapInfoHeader, image->reducedBitmapPixels, image->reducedHeight, image->reducedWidth);
 }
