@@ -120,7 +120,7 @@ int main(int  argc, char ** argv){
 	image_read_initialize(&image, input_file, pixels_to_average);
 
 	// Variables para la medicion de tiempo
-	clock_t start, end;
+	clock_t start, start_iter, end;
 	double duration;
 
 	switch(methods_to_execute){
@@ -131,20 +131,23 @@ int main(int  argc, char ** argv){
 			}
 
 			for (i = 0; i < iterations; ++i) {
+				if(dflag) {
+					start_iter = clock();
+				}
 				image_reduction_method1(&image);
 				if(dflag) {
 					end = clock();
-					duration = ((double)(end - start)) / CLOCKS_PER_SEC;
-					printf("La duraci%cn de ejecutar el m%ctodo 1 en la iteraci%cn %d veces fue de %f\n",162,130,162, i, duration);
+					duration = ((double)(end - start_iter)) / CLOCKS_PER_SEC;
+					printf("La duracion de ejecutar el metodo 1 en la iteracion %d, fue de %f segundos.\n", i+1, duration);
 				}
-				image_write(&image, output_method1_file);
+				image_write_reduction(&image, output_method1_file);
 			}
 
 			if(dflag) {
 				end = clock();
 				duration = ((double)(end - start)) / CLOCKS_PER_SEC;
-				printf("La duraci%cn de ejecutar el m%ctodo 1 %d veces fue de %f\n",162,130, iterations, duration);
-				printf("Con un tiempo promedio de ejecucion de %f\n\n", duration / (double)iterations);
+				printf("La duracion de ejecutar el metodo 1 %d veces fue de %f segundos.\n", iterations, duration);
+				printf("Con un tiempo promedio de ejecucion de %f segundos.\n", duration / (double)iterations);
 			}
 			image_free(&image);
 			break;
@@ -154,20 +157,23 @@ int main(int  argc, char ** argv){
 				start = clock();
 			}
 			for (i = 0; i < iterations; ++i) {
+				if(dflag) {
+					start_iter = clock();
+				}
 				//image_reduction_method2(&image);
 				if(dflag) {
 					end = clock();
-					duration = ((double)(end - start)) / CLOCKS_PER_SEC;
-					printf("La duraci%cn de ejecutar el m%ctodo 2 en la iteraci%cn %d veces fue de %f\n",162,130,162, i, duration);
+					duration = ((double)(end - start_iter)) / CLOCKS_PER_SEC;
+					printf("La duracion de ejecutar el metodo 2 en la iteracion %d, fue de %f segundos.\n", i+1, duration);
 				}
-				//image_write(&image, output_file);
+				//image_write_reduction(&image, output_method2_file);
 			}
 
 			if(dflag) {
 				end = clock();
 				duration = ((double)(end - start)) / CLOCKS_PER_SEC;
-				printf("La duraci%cn de ejecutar el m%ctodo 2 %d veces fue de %f\n",162,130, iterations, duration);
-				printf("Con un tiempo promedio de ejecucion de %f\n", duration / (double)iterations);
+				printf("La duracion de ejecutar el metodo 2 %d veces fue de %f segundos.\n",iterations, duration);
+				printf("Con un tiempo promedio de ejecucion de %f segundos.\n", duration / (double)iterations);
 			}
 			image_free(&image);
 			break;
@@ -178,20 +184,25 @@ int main(int  argc, char ** argv){
 			}
 
 			for (i = 0; i < iterations; ++i) {
+				if(dflag) {
+					start_iter = clock();
+				}
+
 				image_reduction_method1(&image);
+
 				if(dflag) {
 					end = clock();
-					duration = ((double)(end - start)) / CLOCKS_PER_SEC;
-					printf("La duraci%cn de ejecutar el m%ctodo 1 en la iteraci%cn %d veces fue de %f\n",162,130,162, i, duration);
+					duration = ((double)(end - start_iter)) / CLOCKS_PER_SEC;
+					printf("La duracion de ejecutar el metodo 1 en la iteracion %d, fue de %f segundos.\n", i+1, duration);
 				}
-				image_write(&image, output_method1_file);
+				image_write_reduction(&image, output_method1_file);
 			}
 
 			if(dflag) {
 				end = clock();
 				duration = ((double)(end - start)) / CLOCKS_PER_SEC;
-				printf("La duraci%cn de ejecutar el m%ctodo 1 %d veces fue de %f\n",162,130, iterations, duration);
-				printf("Con un tiempo promedio de ejecucion de %f\n\n", duration / (double)iterations);
+				printf("La duracion de ejecutar el metodo 1 %d veces fue de %f segundos.\n", iterations, duration);
+				printf("Con un tiempo promedio de ejecucion de %f segundos.\n\n", duration / (double)iterations);
 			}
 			image_free(&image);
 
@@ -200,20 +211,25 @@ int main(int  argc, char ** argv){
 				start = clock();
 			}
 			for (i = 0; i < iterations; ++i) {
+				if(dflag) {
+					start_iter = clock();
+				}
+
 				//image_reduction_method2(&image);
+
 				if(dflag) {
 					end = clock();
-					duration = ((double)(end - start)) / CLOCKS_PER_SEC;
-					printf("La duraci%cn de ejecutar el m%ctodo 2 en la iteraci%cn %d veces fue de %f\n",162,130,162, i, duration);
+					duration = ((double)(end - start_iter)) / CLOCKS_PER_SEC;
+					printf("La duracion de ejecutar el metodo 2 en la iteracion %d, fue de %f segundos.\n", i+1, duration);
 				}
-				//image_write(&image, output_file);
+				//image_write_reduction(&image, output_method2_file);
 			}
 
 			if(dflag) {
 				end = clock();
 				duration = ((double)(end - start)) / CLOCKS_PER_SEC;
-				printf("La duraci%cn de ejecutar el m%ctodo 2 %d veces fue de %f\n",162,130, iterations, duration);
-				printf("Con un tiempo promedio de ejecucion de %f\n", duration / (double)iterations);
+				printf("La duracion de ejecutar el metodo 2 %d veces fue de %f segundos.\n", iterations, duration);
+				printf("Con un tiempo promedio de ejecucion de %f segundos.\n", duration / (double)iterations);
 			}
 			image_free(&image);
 			break;

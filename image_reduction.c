@@ -19,13 +19,7 @@ void image_free(Image* image) {
     	free(image->bitmapPixels[row]);
     }
 
-    for(row = 0; row < image->bitmapInfoHeader->biHeight; row++) {
-    	free(image->bitmapPixels[row]);
-    }
-    
     free(image->bitmapPixels);
-
-    free(image->reducedBitmapPixels);
 
     free(image->bitmapInfoHeader);
 }
