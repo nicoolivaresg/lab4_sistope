@@ -53,11 +53,14 @@ Pixel** load_bitmap_file(char *filename, BITMAPINFOHEADER *bitmapInfoHeader)
     // Como se usan 24 bits, se debe rellenar hasta que la cantidad de bytes por fila sean multiplos de 4.
     int widthPadded = (bitmapInfoHeader->biWidth * 3 + 3) & (~3);
     // Swappear los valores de R y B para obtener RGB (el bitmap usa BGR).
-    for (pixelsRead = 0, imageIdx = 0;imageIdx < bitmapInfoHeader->biSizeImage;imageIdx+=3)
+    for (pixelsRead = 0, imageIdx = 0;imageIdx < bitmapInfoHeader->biSizeImage;imageIdx+=3, pixelsRead++)
     {
     	if(pixelsRead >= bitmapInfoHeader->biWidth) {
     		pixelsRead = 0;
-    		imageIdx += widthPadded - bitmapInfoHeader->biWidth;
+            imageIdx += widthPadded - (bitmapInfoHeader->biWidth * 3);
+            if(imageIdx >= bitmapInfoHeader->biSizeImage) {
+                continue;
+            }
     	}
         tempRGB = bitmapImage[imageIdx];
         bitmapImage[imageIdx] = bitmapImage[imageIdx + 2];

@@ -63,6 +63,7 @@ void image_reduction_method1(Image* image);
  */
 void image_reduction_method2(Image* image);
 
+
 /**
  * Escribe la imagen original en un archivo.
  * 

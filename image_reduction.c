@@ -15,11 +15,15 @@ void image_read_initialize(Image* image, char* filename, int m) {
 
 void image_free(Image* image) {
 	int row;
-    for(row = 0; row < image->bitmapInfoHeader->biHeight; row++) {
+    for(row = 0; row < image->height; row++) {
     	free(image->bitmapPixels[row]);
     }
-
     free(image->bitmapPixels);
+
+    for(row = 0; row < image->reducedHeight; row++) {
+    	free(image->reducedBitmapPixels[row]);
+    }
+    free(image->reducedBitmapPixels);
 
     free(image->bitmapInfoHeader);
 }
@@ -53,6 +57,7 @@ void image_reduction_init(Image * image, int method) {
 }
 
 void image_reduction_method1(Image* image) {
+	/*
 	int i, k, j, indexNewColumn = 0;
 	//Contador para determinar cuando toque sacar el promedio porque se alcanzan los m pixeles
 	int count_pixels = image->pixelAverage;
@@ -146,6 +151,7 @@ void image_reduction_method1(Image* image) {
 						averageB = sumB + (remaining_pixels * averageB);
 					
 						
+	printf("%d\n", indexNewColumn);
 						image->reducedBitmapPixels[i][indexNewColumn].R = averageR;
 						image->reducedBitmapPixels[i][indexNewColumn].G = averageG;
 						image->reducedBitmapPixels[i][indexNewColumn].B = averageB;
@@ -267,11 +273,86 @@ void image_reduction_method1(Image* image) {
 			j = 0;
 		}
 		i++;
-	} while ( i < image->width );
+	} while ( i < image->width );*/
+
+	int i, k, j, c;
+
+	int averageR, averageB, averageG;
+	image_reduction_init(image,1);
+
+	for(i = 0; i < image->reducedHeight; i++) {
+		if(i % 2 == 0) {
+			for(j = 0; j < image->reducedWidth; j++) {
+				averageR = 0, averageB = 0, averageG = 0;
+				for(k = j*image->pixelAverage, c = 0; c < image->pixelAverage; c++, k++) {
+					if(k >= image->width || k < 0) {
+						averageR += 125;
+						averageG += 125;
+						averageB += 125;
+						continue;
+					}
+					averageR += image->bitmapPixels[i][k].R;
+					averageG += image->bitmapPixels[i][k].G;
+					averageB += image->bitmapPixels[i][k].B;
+				}
+				averageR /= image->pixelAverage;
+				averageG /= image->pixelAverage;
+				averageB /= image->pixelAverage;
+
+				pixel_init(&(image->reducedBitmapPixels[i][j]), averageR, averageG, averageB);
+			}
+		} else if(i % 2 == 1) {
+			for(j = image->reducedWidth-1; j >= 0; j--) {
+				averageR = 0, averageB = 0, averageG = 0;
+				for(k = (j*image->pixelAverage) + image->pixelAverage - 1, c = 0; c < image->pixelAverage; c++, k--) {
+					if(k >= image->width || k < 0) {
+						averageR += 125;
+						averageG += 125;
+						averageB += 125;
+						continue;
+					}
+					averageR += image->bitmapPixels[i][k].R;
+					averageG += image->bitmapPixels[i][k].G;
+					averageB += image->bitmapPixels[i][k].B;
+				}
+				averageR /= image->pixelAverage;
+				averageG /= image->pixelAverage;
+				averageB /= image->pixelAverage;
+
+				pixel_init(&(image->reducedBitmapPixels[i][j]), averageR, averageG, averageB);
+			}
+		}
+	}
 }
 
 void image_reduction_method2(Image* image) {
-	
+	int i, k, j, c;
+	//Contador para sumar el valor de los pixeles
+	int averageR = 0,averageG = 0,averageB = 0;
+
+	//Inicialización de matriz de 
+	image_reduction_init(image,2);
+
+	for(j = 0; j < image->reducedWidth; j++) {
+		for(i = 0, k = 0; i < image->reducedHeight; i++) {
+			averageR = 0, averageB = 0, averageG = 0;
+			for(k = i*image->pixelAverage, c = 0; c < image->pixelAverage; c++, k++) {
+				if(k >= image->height) {
+					averageR += 125;
+					averageG += 125;
+					averageB += 125;
+				}
+				averageR += image->bitmapPixels[k][j].R;
+				averageG += image->bitmapPixels[k][j].G;
+				averageB += image->bitmapPixels[k][j].B;
+			}
+			averageR /= image->pixelAverage;
+			averageG /= image->pixelAverage;
+			averageB /= image->pixelAverage;
+
+			pixel_init(&(image->reducedBitmapPixels[i][j]), averageR, averageG, averageB);
+		}
+	}
 }
 
 void image_write(Image * image, char* filename) {
@@ -279,5 +360,5 @@ void image_write(Image * image, char* filename) {
 }
 
 void image_write_reduction(Image * image, char * filename){
-	save_bitmap_file(strcat(filename,".bmp"), image->bitmapInfoHeader, image->reducedBitmapPixels, image->reducedHeight, image->reducedWidth);
+	save_bitmap_file(filename, image->bitmapInfoHeader, image->reducedBitmapPixels, image->reducedHeight, image->reducedWidth);
 }
